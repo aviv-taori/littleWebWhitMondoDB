@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin-top: 50px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: top;
+            height: 100vh;
+        }
+        #messageInput {
+            margin-bottom: 10px;
+        }
+        #messageList {
+            list-style-type: none;
+            padding: 0;
+        }
+        .messageItem {
+            background-color: #f4f4f4;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="messageInput" placeholder="Enter your message">
+    <div>
+    <button  onclick="sendMessage()">Send</button>
+    <button onclick="removeAllMessage()">Delete all</button></div>
+    <ul id="messageList"></ul>
+
+    <script>
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+
+            const response = await fetch('http://localhost:418/comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+
+            if (response.ok) {
+                messageInput.value = '';
+                fetchMessages();
+            } else {
+                console.error('Failed to send message');
+            }
+        } 
+        
+        async function removeAllMessage() {
+            const response = await fetch('http://localhost:418/comment/all', {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                fetchMessages();
+            } else {
+                console.error('Failed to send message');
+            }
+        }
+
+        async function fetchMessages() {
+            const response = await fetch('http://localhost:418/comment/all', {
+                method: 'Get'
+            });
+            const data = await response.json();
+
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '';
+
+            data.forEach(message => {
+                const li = document.createElement('li');
+                li.className = 'messageItem';
+                li.textContent = message.message;;
+                messageList.appendChild(li);
+            });
+        }
+
+        fetchMessages(); // Fetch messages when the page loads
+    </script>
+</body>
+</html>
